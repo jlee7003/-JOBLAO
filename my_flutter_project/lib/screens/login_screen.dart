@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'home_screen.dart';
-// 아래 파일은 회원가입 화면이 위치한 경로로 수정하세요.
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -35,18 +34,31 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        SharedPreferences prefs = await SharedPreferences.getInstance();
+        print('🔍 로그인 응답: $data');
+
+        final prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', data['token']);
 
+        // ✅ 사용자 ID 저장 - 올바른 위치로 수정
+        if (data['user'] != null && data['user']['id'] != null) {
+          final userId = int.tryParse(data['user']['id'].toString());
+          if (userId != null) {
+            await prefs.setInt('user_id', userId);
+            print('✅ 저장된 user_id: $userId');
+          } else {
+            print('⚠️ user_id 변환 실패: ${data['user']['id']}');
+          }
+        } else {
+          print('⚠️ 사용자 ID 필드 없음: $data');
+        }
+
+        // ✅ 콜백 호출 및 화면 이동은 저장 후 실행
         widget.onLogin();
 
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) =>
-                HomeScreen(
-                  onLogout: () => widget.onLogin(),
-                ),
+            builder: (_) => HomeScreen(onLogout: widget.onLogin),
           ),
         );
       } else {
@@ -65,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => RegisterScreen(), // SignupScreen은 별도 구현 필요
+        builder: (_) => RegisterScreen(),
       ),
     );
   }
@@ -73,7 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: () async => false, // 뒤로가기 막기
+      onWillPop: () async => false,
       child: Scaffold(
         appBar: AppBar(title: Text('로그인')),
         body: Padding(
