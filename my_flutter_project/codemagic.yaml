@@ -5,10 +5,9 @@ workflows:
     instance_type: mac_mini
     environment:
       flutter: stable
+    working_directory: my_flutter_project
     scripts:
-      - cd my_flutter_project
-      - flutter pub get --directory my_flutter_project
-      - flutter build apk --release --target-directory my_flutter_project
-
+      - flutter pub get
+      - flutter build apk --release
     artifacts:
-      - my_flutter_project/build/app/outputs/flutter-apk/app-release.apk
+      - build/app/outputs/flutter-apk/app-release.apk
