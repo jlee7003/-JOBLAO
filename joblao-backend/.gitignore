@@ -1,0 +1,4 @@
+# android/key.properties
+/android/key.properties
+*.jks
+*.env
